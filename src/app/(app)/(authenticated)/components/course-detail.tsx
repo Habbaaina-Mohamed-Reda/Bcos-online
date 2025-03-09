@@ -57,7 +57,6 @@ type Course = {
   enrolled: boolean
   progress: number
   rating: number
-  reviews: number
   keyPoints: string[]
   assignments: Array<{
     id: string

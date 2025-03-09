@@ -1,8 +1,8 @@
-// src/app/(app)/(authenticated)/components/dashboard-content.tsx
 'use client'
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { ChevronLeft, ChevronRight, Clock, Users, Play } from 'lucide-react'
 import { useDirection } from './direction-provider'
 import { Avatar, AvatarImage, AvatarFallback } from './ui/avatar'
@@ -47,6 +47,7 @@ export function DashboardContent({ initialCourses }: DashboardContentProps) {
     courses.length > 0
       ? courses[0]
       : {
+          id: 'featured',
           title: 'Sharpen Your Skills With Professional Online Courses',
           cta: 'Join Now',
         }
@@ -88,6 +89,7 @@ export function DashboardContent({ initialCourses }: DashboardContentProps) {
             courses[0].image?.url || 'https://images.unsplash.com/photo-1587620962725-abab7fe55159',
         }
       : {
+          id: 'current',
           title: 'UX Design: How To Implement Usability Testing',
           instructor: 'Alfredo Rhiel Madsen',
           students: 500,
@@ -155,6 +157,7 @@ export function DashboardContent({ initialCourses }: DashboardContentProps) {
       role: 'Instructor',
       date: '25/10/2023',
       course: 'Understanding Concept Of React',
+      courseId: 'react-concepts',
       image: 'https://github.com/shadcn.png',
     },
     {
@@ -163,6 +166,7 @@ export function DashboardContent({ initialCourses }: DashboardContentProps) {
       role: 'Instructor',
       date: '25/10/2023',
       course: 'Understanding Concept Of React',
+      courseId: 'react-basics',
       image: 'https://github.com/shadcn.png',
     },
   ]
@@ -201,47 +205,51 @@ export function DashboardContent({ initialCourses }: DashboardContentProps) {
           </div>
 
           {/* Featured course */}
-          <Card className="bg-primary text-primary-foreground overflow-hidden relative">
-            <CardContent className="p-6">
-              <div className="max-w-md">
-                <h2 className="text-xl md:text-2xl font-bold mb-4">{featuredCourse.title}</h2>
-                <Button className="bg-white text-primary hover:bg-gray-100">
-                  {featuredCourse.cta}
-                </Button>
-              </div>
+          <Link href={`/courses/${featuredCourse.id}`}>
+            <Card className="bg-primary text-primary-foreground overflow-hidden relative hover:bg-primary/90 transition-colors cursor-pointer">
+              <CardContent className="p-6">
+                <div className="max-w-md">
+                  <h2 className="text-xl md:text-2xl font-bold mb-4">{featuredCourse.title}</h2>
+                  <Button className="bg-white text-primary hover:bg-gray-100">
+                    {featuredCourse.cta}
+                  </Button>
+                </div>
 
-              {/* Decorative elements */}
-              <div className="absolute top-1/2 right-10 transform -translate-y-1/2 w-32 h-32 rounded-full border-4 border-primary-foreground/20 hidden md:block"></div>
-              <div className="absolute bottom-0 right-20 w-16 h-16 rounded-full bg-secondary/20 hidden md:block"></div>
-            </CardContent>
-          </Card>
+                {/* Decorative elements */}
+                <div className="absolute top-1/2 right-10 transform -translate-y-1/2 w-32 h-32 rounded-full border-4 border-primary-foreground/20 hidden md:block"></div>
+                <div className="absolute bottom-0 right-20 w-16 h-16 rounded-full bg-secondary/20 hidden md:block"></div>
+              </CardContent>
+            </Card>
+          </Link>
 
           {/* Watched courses */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {watchedCourses.map((course) => (
-              <Card key={course.id} className="bg-white dark:bg-gray-900">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="text-xs text-muted-foreground">2/8 Watched</p>
-                      <h3 className="font-medium">{course.title}</h3>
+              <Link href={`/courses/${course.id}`} key={course.id}>
+                <Card className="bg-white dark:bg-gray-900 hover:shadow-md transition-shadow cursor-pointer">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="text-xs text-muted-foreground">2/8 Watched</p>
+                        <h3 className="font-medium">{course.title}</h3>
+                      </div>
+                      <Button variant="ghost" size="icon">
+                        <svg
+                          width="4"
+                          height="16"
+                          viewBox="0 0 4 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="fill-current"
+                        >
+                          <path d="M2 4C3.1 4 4 3.1 4 2C4 0.9 3.1 0 2 0C0.9 0 0 0.9 0 2C0 3.1 0.9 4 2 4ZM2 6C0.9 6 0 6.9 0 8C0 9.1 0.9 10 2 10C3.1 10 4 9.1 4 8C4 6.9 3.1 6 2 6ZM2 12C0.9 12 0 12.9 0 14C0 15.1 0.9 16 2 16C3.1 16 4 15.1 4 14C4 12.9 3.1 12 2 12Z" />
+                        </svg>
+                      </Button>
                     </div>
-                    <Button variant="ghost" size="icon">
-                      <svg
-                        width="4"
-                        height="16"
-                        viewBox="0 0 4 16"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="fill-current"
-                      >
-                        <path d="M2 4C3.1 4 4 3.1 4 2C4 0.9 3.1 0 2 0C0.9 0 0 0.9 0 2C0 3.1 0.9 4 2 4ZM2 6C0.9 6 0 6.9 0 8C0 9.1 0.9 10 2 10C3.1 10 4 9.1 4 8C4 6.9 3.1 6 2 6ZM2 12C0.9 12 0 12.9 0 14C0 15.1 0.9 16 2 16C3.1 16 4 15.1 4 14C4 12.9 3.1 12 2 12Z" />
-                      </svg>
-                    </Button>
-                  </div>
-                  <Progress value={course.progress} className="h-1 mt-4" />
-                </CardContent>
-              </Card>
+                    <Progress value={course.progress} className="h-1 mt-4" />
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
 
@@ -261,36 +269,40 @@ export function DashboardContent({ initialCourses }: DashboardContentProps) {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {continueCourses.map((course) => (
-                <Card key={course.id} className="overflow-hidden">
-                  <div className="relative aspect-video">
-                    <Image
-                      src={course.image || '/placeholder.svg'}
-                      alt={course.title}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                      <Button size="icon" className="rounded-full bg-white/90 hover:bg-white">
-                        <Play className="h-5 w-5 text-primary" />
-                      </Button>
-                    </div>
-                  </div>
-                  <CardContent className="p-4">
-                    <Badge className="mb-2 bg-accent text-accent-foreground">TRENDING</Badge>
-                    <h3 className="font-medium line-clamp-2">{course.title}</h3>
-                    <div className="flex items-center mt-4">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src="https://github.com/shadcn.png" />
-                        <AvatarFallback>PK</AvatarFallback>
-                      </Avatar>
-                      <div className="ml-2">
-                        <p className="text-sm font-medium">{course.instructor}</p>
-                        <p className="text-xs text-muted-foreground">{course.role}</p>
+                <Link href={`/courses/${course.id}`} key={course.id}>
+                  <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
+                    <div className="relative aspect-video">
+                      <Image
+                        src={course.image || '/placeholder.svg'}
+                        alt={course.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <Button size="icon" className="rounded-full bg-white/90 hover:bg-white">
+                          <Play className="h-5 w-5 text-primary" />
+                        </Button>
                       </div>
                     </div>
-                    <Progress value={course.progress} className="h-1 mt-4" />
-                  </CardContent>
-                </Card>
+                    <CardContent className="p-4">
+                      <Badge className="mb-2 bg-accent text-accent-foreground">TRENDING</Badge>
+                      <h3 className="font-medium line-clamp-2 hover:text-primary transition-colors">
+                        {course.title}
+                      </h3>
+                      <div className="flex items-center mt-4">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src="https://github.com/shadcn.png" />
+                          <AvatarFallback>PK</AvatarFallback>
+                        </Avatar>
+                        <div className="ml-2">
+                          <p className="text-sm font-medium">{course.instructor}</p>
+                          <p className="text-xs text-muted-foreground">{course.role}</p>
+                        </div>
+                      </div>
+                      <Progress value={course.progress} className="h-1 mt-4" />
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>
@@ -306,29 +318,33 @@ export function DashboardContent({ initialCourses }: DashboardContentProps) {
 
             <div className="space-y-4">
               {mentors.map((mentor) => (
-                <Card key={mentor.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <Avatar className="h-10 w-10">
-                          <AvatarImage src={mentor.image} />
-                          <AvatarFallback>PK</AvatarFallback>
-                        </Avatar>
-                        <div className="ml-3">
-                          <p className="font-medium">{mentor.name}</p>
-                          <p className="text-sm text-muted-foreground">{mentor.date}</p>
+                <Link href={`/courses/${mentor.courseId}`} key={mentor.id}>
+                  <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={mentor.image} />
+                            <AvatarFallback>PK</AvatarFallback>
+                          </Avatar>
+                          <div className="ml-3">
+                            <p className="font-medium">{mentor.name}</p>
+                            <p className="text-sm text-muted-foreground">{mentor.date}</p>
+                          </div>
                         </div>
+                        <Badge className="bg-accent text-accent-foreground">TRENDING</Badge>
                       </div>
-                      <Badge className="bg-accent text-accent-foreground">TRENDING</Badge>
-                    </div>
-                    <div className="mt-4">
-                      <p className="text-sm">{mentor.course}</p>
-                      <Button variant="outline" size="sm" className="mt-2">
-                        Show details
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                      <div className="mt-4">
+                        <p className="text-sm hover:text-primary transition-colors">
+                          {mentor.course}
+                        </p>
+                        <Button variant="outline" size="sm" className="mt-2">
+                          Show details
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
               ))}
             </div>
           </div>
@@ -349,60 +365,64 @@ export function DashboardContent({ initialCourses }: DashboardContentProps) {
               </div>
             </div>
 
-            <Card className="overflow-hidden">
-              <div className="relative aspect-video">
-                <Image
-                  src="https://images.unsplash.com/photo-1587620962725-abab7fe55159"
-                  alt="Course thumbnail"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <Badge className="mb-2">Beginner</Badge>
-                  <div className="flex items-center">
-                    <Avatar className="h-6 w-6">
-                      <AvatarImage src="https://github.com/shadcn.png" />
-                      <AvatarFallback>AM</AvatarFallback>
-                    </Avatar>
+            <Link href={`/courses/${currentCourse.id}`}>
+              <Card className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer">
+                <div className="relative aspect-video">
+                  <Image
+                    src={currentCourse.image}
+                    alt="Course thumbnail"
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <Badge className="mb-2">Beginner</Badge>
+                    <div className="flex items-center">
+                      <Avatar className="h-6 w-6">
+                        <AvatarImage src="https://github.com/shadcn.png" />
+                        <AvatarFallback>AM</AvatarFallback>
+                      </Avatar>
+                    </div>
                   </div>
-                </div>
-                <h3 className="font-bold">{currentCourse.title}</h3>
-                <div className="flex items-center mt-2 text-sm text-muted-foreground">
-                  <Users className="h-4 w-4 mr-1" />
-                  <span>{currentCourse.students} Student</span>
-                  <span className="mx-2">•</span>
-                  <Clock className="h-4 w-4 mr-1" />
-                  <span>{currentCourse.duration}</span>
-                </div>
-
-                <div className="mt-4">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Progress</span>
-                    <span>{currentCourse.progress}%</span>
+                  <h3 className="font-bold hover:text-primary transition-colors">
+                    {currentCourse.title}
+                  </h3>
+                  <div className="flex items-center mt-2 text-sm text-muted-foreground">
+                    <Users className="h-4 w-4 mr-1" />
+                    <span>{currentCourse.students} Student</span>
+                    <span className="mx-2">•</span>
+                    <Clock className="h-4 w-4 mr-1" />
+                    <span>{currentCourse.duration}</span>
                   </div>
-                  <Progress value={currentCourse.progress} className="h-1" />
-                </div>
 
-                <div className="mt-4">
-                  <h4 className="font-medium mb-2">5 Modules</h4>
-                  <div className="space-y-3">
-                    {currentCourse.modules.map((module) => (
-                      <div key={module.id} className="flex items-center justify-between text-sm">
-                        <div className="flex items-center">
-                          <span className="w-5 text-muted-foreground">{module.id}</span>
-                          <span>{module.title}</span>
+                  <div className="mt-4">
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Progress</span>
+                      <span>{currentCourse.progress}%</span>
+                    </div>
+                    <Progress value={currentCourse.progress} className="h-1" />
+                  </div>
+
+                  <div className="mt-4">
+                    <h4 className="font-medium mb-2">5 Modules</h4>
+                    <div className="space-y-3">
+                      {currentCourse.modules.map((module) => (
+                        <div key={module.id} className="flex items-center justify-between text-sm">
+                          <div className="flex items-center">
+                            <span className="w-5 text-muted-foreground">{module.id}</span>
+                            <span>{module.title}</span>
+                          </div>
+                          <span className="text-muted-foreground">{module.duration}</span>
                         </div>
-                        <span className="text-muted-foreground">{module.duration}</span>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                <Button className="w-full mt-4 bg-primary">Go to detail</Button>
-              </CardContent>
-            </Card>
+                  <Button className="w-full mt-4 bg-primary">Go to detail</Button>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
       </div>
