@@ -1,29 +1,34 @@
-import { Block } from "payload";
+import { Block } from 'payload'
 
 export const VideoBlock: Block = {
-  slug: "video",
+  slug: 'videoContent',
   labels: {
-    singular: "Video",
-    plural: "Videos",
+    singular: 'Video Content',
+    plural: 'Video Contents',
   },
   fields: [
     {
-      name: "title",
-      label: "Titel",
-      type: "text",
+      name: 'title',
+      type: 'text',
       required: true,
+      label: 'Video Title',
     },
     {
-      name: "duration",
-      label: "Dauer (in Minuten)",
-      type: "number",
-      required: true,
+      name: 'description',
+      type: 'textarea',
+      label: 'Video Description',
     },
     {
-      name: "playerURL",
-      label: "Bunny Player URL",
-      type: "text",
+      name: 'videoFile',
+      type: 'upload',
       required: true,
+      relationTo: 'media',
+      label: 'Video File',
+    },
+    {
+      name: 'duration',
+      type: 'number',
+      label: 'Duration (seconds)',
     },
   ],
 }

@@ -1,49 +1,65 @@
-import { CollectionConfig } from 'payload'
+// collections/Participation.ts
+import type { CollectionConfig } from 'payload'
 
 export const Participation: CollectionConfig = {
   slug: 'participation',
-  access: {
-    read: ({ req: { user } }) => {
-      return { customer: { equals: user?.id } }
-    },
-    create: ({ req: { user }, data }) => {
-      if (user?.collection === 'users') {
-        return true
-      } else if (user?.collection === 'individualAccount' && data?.customer === user?.id) {
-        return true
-      } else {
-        return false
-      }
-    },
-    update: ({ req: { user } }) => {
-      return { customer: { equals: user?.id } }
-    },
-    delete: ({ req: { user } }) => {
-      return { customer: { equals: user?.id } }
-    },
-  },
   admin: {
-    useAsTitle: '',
+    useAsTitle: 'client',
+    defaultColumns: ['client', 'course', 'status'],
+    group: 'Clients',
+  },
+  access: {
+    create: ({ req: { user } }) => Boolean(user), // Authenticated clients can enroll
+    read: ({ req: { user } }) => (user ? { client: { equals: user.id.toString() } } : false), // Only read own enrollments
+    update: ({ req: { user } }) => (user ? { client: { equals: user.id.toString() } } : false), // Only read own enrollments
   },
   fields: [
     {
-      name: 'customer',
-      label: 'Customer',
+      name: 'client',
       type: 'relationship',
       relationTo: 'individualAccount',
       required: true,
+      label: 'Client',
     },
     {
       name: 'course',
-      label: 'Course',
       type: 'relationship',
       relationTo: 'courses',
       required: true,
+      label: 'Course',
     },
     {
-      name: 'progress',
-      label: 'Progress',
-      type: 'number',
+      name: 'status',
+      type: 'select',
+      options: [
+        { label: 'Pending', value: 'pending' },
+        { label: 'Enrolled', value: 'enrolled' },
+        { label: 'Paid', value: 'paid' }, // For paid courses
+        { label: 'Completed', value: 'completed' },
+      ],
+      defaultValue: 'pending',
+      required: true,
+      label: 'Enrollment Status',
+    },
+    {
+      name: 'paymentStatus', // Optional: For paid courses
+      type: 'select',
+      options: [
+        { label: 'Unpaid', value: 'unpaid' },
+        { label: 'Paid', value: 'paid' },
+        { label: 'Failed', value: 'failed' },
+      ],
+      defaultValue: 'unpaid',
+      label: 'Payment Status',
+      admin: { condition: (data) => data.course?.isPaid === 'paid' },
+    },
+    {
+      name: 'examCompleted', // New field
+      type: 'checkbox',
+      label: 'Exam Completed',
+      defaultValue: false,
+      admin: { readOnly: true, description: 'Automatically set when exam is graded successfully' },
     },
   ],
+  timestamps: true,
 }

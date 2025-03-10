@@ -1,3 +1,4 @@
+// collections/Clients/individualAccount.ts
 import type { CollectionConfig } from 'payload'
 
 export const individualAccount: CollectionConfig = {
@@ -8,24 +9,14 @@ export const individualAccount: CollectionConfig = {
     group: 'Clients',
   },
   access: {
-    create: () => true,
-    read: () => true,
-    update: () => true,
+    create: () => true, // Anyone can sign up
+    read: ({ req: { user } }) => (user ? { id: { equals: user.id.toString() } } : false), // Only read own data
+    update: ({ req: { user } }) => (user ? { id: { equals: user.id.toString() } } : false), // Only update own data
   },
   auth: true,
   fields: [
-    // Basic Information
-    {
-      name: 'fullName',
-      label: 'Full Name',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'phone',
-      label: 'Phone Number',
-      type: 'text',
-    },
+    { name: 'fullName', label: 'Full Name', type: 'text', required: true },
+    { name: 'phone', label: 'Phone Number', type: 'text' },
     {
       name: 'fieldOfWork',
       label: 'Field of Work',
@@ -46,33 +37,8 @@ export const individualAccount: CollectionConfig = {
       ],
       required: true,
     },
-    // Course Participation
-    {
-      name: 'participation',
-      label: 'Participation',
-      type: 'relationship',
-      relationTo: 'courses',
-      hasMany: true,
-    },
-    // Additional Fields
-    {
-      name: 'agreeToTerms',
-      label: 'Terms and Conditions',
-      type: 'checkbox',
-      required: true,
-      admin: {
-        description: 'User agrees to the terms and conditions',
-      },
-    },
-    {
-      name: 'marketingConsent',
-      label: 'Marketing Consent',
-      type: 'checkbox',
-      defaultValue: false,
-      admin: {
-        description: 'User agrees to receive marketing emails and WhatsApp messages',
-      },
-    },
+    { name: 'agreeToTerms', label: 'Terms and Conditions', type: 'checkbox', required: true },
+    { name: 'marketingConsent', label: 'Marketing Consent', type: 'checkbox', defaultValue: false },
     {
       name: 'status',
       label: 'Status',
@@ -84,9 +50,7 @@ export const individualAccount: CollectionConfig = {
         { label: 'Cancelled', value: 'cancelled' },
       ],
       defaultValue: 'active',
-      admin: {
-        position: 'sidebar',
-      },
+      admin: { position: 'sidebar' },
     },
   ],
   timestamps: true,

@@ -1,5 +1,5 @@
-import { isSuperAdmin } from '@/access/IsUserRole';
-import { CollectionConfig } from 'payload';
+import { isSuperAdmin } from '@/access/IsUserRole'
+import { CollectionConfig } from 'payload'
 
 // Instructors Collection
 export const Instructors: CollectionConfig = {
@@ -11,7 +11,7 @@ export const Instructors: CollectionConfig = {
   access: {
     // Only admins can create, update, and delete instructors
     create: isSuperAdmin,
-    update:isSuperAdmin,
+    update: isSuperAdmin,
     delete: isSuperAdmin,
     // Anyone can read instructors (e.g., for displaying in course details)
     read: () => true,
@@ -54,22 +54,22 @@ export const Instructors: CollectionConfig = {
     beforeChange: [
       ({ req, data }) => {
         if (req.user && !data.createdBy) {
-          data.createdBy = req.user.id;
+          data.createdBy = req.user.id
         }
-        return data;
+        return data
       },
     ],
   },
-};
+}
 
 // TypeScript Interface for Instructor
 export interface Instructor {
-  id: string;
-  name: string;
-  description?: string;
-  email: string;
-  photo?: string | { id: string }; // Media reference
-  createdBy: string | { id: string };
-  createdAt: string;
-  updatedAt: string;
+  id: string
+  name: string
+  description?: string
+  email: string
+  photo?: string | { id: string } // Media reference
+  createdBy: string | { id: string }
+  createdAt: string
+  updatedAt: string
 }

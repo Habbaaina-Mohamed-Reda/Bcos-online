@@ -77,6 +77,11 @@ export interface Config {
     instructors: Instructor;
     participation: Participation;
     BusinessAcounts: BusinessAcount;
+    coursereviews: Coursereview;
+    certificates: Certificate;
+    videos: Video;
+    exams: Exam;
+    'exam-submissions': ExamSubmission;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -92,6 +97,11 @@ export interface Config {
     instructors: InstructorsSelect<false> | InstructorsSelect<true>;
     participation: ParticipationSelect<false> | ParticipationSelect<true>;
     BusinessAcounts: BusinessAcountsSelect<false> | BusinessAcountsSelect<true>;
+    coursereviews: CoursereviewsSelect<false> | CoursereviewsSelect<true>;
+    certificates: CertificatesSelect<false> | CertificatesSelect<true>;
+    videos: VideosSelect<false> | VideosSelect<true>;
+    exams: ExamsSelect<false> | ExamsSelect<true>;
+    'exam-submissions': ExamSubmissionsSelect<false> | ExamSubmissionsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -285,7 +295,7 @@ export interface User {
   password?: string | null;
 }
 /**
- * User comments on lessons (pending approval)
+ * Manage comments for course lessons
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "comments".
@@ -294,88 +304,225 @@ export interface Comment {
   id: number;
   content: string;
   /**
-   * The course containing the lesson
+   * The course this comment belongs to
    */
   course: number | Course;
   /**
-   * Path to the lesson (e.g., "sections[0].lessons[1]")
+   * Format: sectionIndex.lessonIndex (e.g., "0.2" for first section, third lesson)
    */
   lessonPath: string;
   /**
-   * Set to Approved to publish the comment
+   * Only approved comments will be displayed to users
    */
-  status: 'pending' | 'approved';
-  createdBy: number | User;
+  status: 'pending' | 'approved' | 'rejected';
+  createdBy?: (number | null) | User;
   postedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
+ * Create and manage courses for the LMS
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "courses".
  */
 export interface Course {
   id: number;
   title: string;
-  description: string;
-  image: number | Media;
-  curriculum: (
-    | {
-        title: string;
-        questions: {
-          question: string;
-          answers: {
-            answer: string;
-            true?: boolean | null;
+  /**
+   * Lowercase course name for URL display
+   */
+  urlName: string;
+  state: 'draft' | 'published' | 'pending';
+  description: {
+    details?: {
+      challenges?:
+        | {
+            point: {
+              root: {
+                type: string;
+                children: {
+                  type: string;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
             id?: string | null;
-          }[];
-          id?: string | null;
-        }[];
-        id?: string | null;
-        blockName?: string | null;
-        blockType: 'quiz';
-      }
+          }[]
+        | null;
+      overview?:
+        | {
+            point: {
+              root: {
+                type: string;
+                children: {
+                  type: string;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            id?: string | null;
+          }[]
+        | null;
+      outcomes?:
+        | {
+            point: {
+              root: {
+                type: string;
+                children: {
+                  type: string;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            id?: string | null;
+          }[]
+        | null;
+      targetAudience?:
+        | {
+            point: {
+              root: {
+                type: string;
+                children: {
+                  type: string;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            id?: string | null;
+          }[]
+        | null;
+    };
+    infos: {
+      numberOfVideos: number;
+      numberOfSections: number;
+      numberOfPracticalFiles: number;
+      numberOfPracticalExamples: number;
+      courseTime: number;
+    };
+  };
+  coverPhoto: number | Media;
+  videoPreview?: (number | null) | Media;
+  enrollmentType: 'public' | 'private';
+  isPaid: 'free' | 'paid';
+  price?: number | null;
+  sections?:
     | {
         title: string;
-        duration: number;
-        playerURL: string;
+        description?: string | null;
+        order: number;
+        /**
+         * Allow authenticated users (non-enrolled) to view this section’s content.
+         */
+        isPublic?: boolean | null;
+        lessons?:
+          | {
+              title: string;
+              description?: string | null;
+              order: number;
+              contentItems?:
+                | (
+                    | {
+                        title: string;
+                        description?: string | null;
+                        videoFile: number | Media;
+                        duration?: number | null;
+                        id?: string | null;
+                        blockName?: string | null;
+                        blockType: 'videoContent';
+                      }
+                    | {
+                        title: string;
+                        description?: string | null;
+                        pdfFile: number | Media;
+                        id?: string | null;
+                        blockName?: string | null;
+                        blockType: 'pdfContent';
+                      }
+                    | {
+                        title: string;
+                        description?: string | null;
+                        excelFile: number | Media;
+                        id?: string | null;
+                        blockName?: string | null;
+                        blockType: 'excelContent';
+                      }
+                    | {
+                        title: string;
+                        description?: string | null;
+                        docFile: number | Media;
+                        id?: string | null;
+                        blockName?: string | null;
+                        blockType: 'docContent';
+                      }
+                    | {
+                        /**
+                         * Enter the quiz question (e.g., "What is the capital of France?")
+                         */
+                        question: string;
+                        /**
+                         * Choose whether this is a single-choice (one correct answer) or multiple-choice (one or more correct answers) question
+                         */
+                        questionType: 'single' | 'multiple';
+                        options: {
+                          /**
+                           * Enter the text for this answer option (e.g., "Paris")
+                           */
+                          text: string;
+                          /**
+                           * Check if this option is a correct answer
+                           */
+                          isCorrect?: boolean | null;
+                          id?: string | null;
+                        }[];
+                        /**
+                         * Optional explanation to display after the quiz is answered
+                         */
+                        explanation?: string | null;
+                        id?: string | null;
+                        blockName?: string | null;
+                        blockType: 'quizQuestion';
+                      }
+                  )[]
+                | null;
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
-        blockName?: string | null;
-        blockType: 'video';
-      }
-  )[];
+      }[]
+    | null;
+  instructor: number | Instructor;
+  /**
+   * Select an exam to associate with this course
+   */
+  exam?: (number | null) | Exam;
+  createdBy?: (number | null) | User;
   updatedAt: string;
   createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "individualAccount".
- */
-export interface IndividualAccount {
-  id: number;
-  fullName: string;
-  phone?: string | null;
-  fieldOfWork: 'management' | 'finance' | 'marketing' | 'digital' | 'logistics' | 'hr' | 'production' | 'it' | 'safety';
-  participation?: (number | Course)[] | null;
-  /**
-   * User agrees to the terms and conditions
-   */
-  agreeToTerms: boolean;
-  /**
-   * User agrees to receive marketing emails and WhatsApp messages
-   */
-  marketingConsent?: boolean | null;
-  status?: ('active' | 'pending' | 'completed' | 'cancelled') | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  password?: string | null;
 }
 /**
  * Instructors for LMS courses
@@ -394,14 +541,109 @@ export interface Instructor {
   createdAt: string;
 }
 /**
+ * Create and manage exams that can be assigned to courses
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exams".
+ */
+export interface Exam {
+  id: number;
+  title: string;
+  /**
+   * General information about the exam
+   */
+  description?: string | null;
+  /**
+   * Maximum time allowed for completion
+   */
+  timeLimit?: number | null;
+  passingScore: number;
+  /**
+   * Add questions to this exam
+   */
+  questions: {
+    questionText: string;
+    /**
+     * Select the type of question
+     */
+    questionType: 'multiple-choice' | 'true-false' | 'short-answer';
+    /**
+     * Point value for this question
+     */
+    points: number;
+    multipleChoiceOptions?:
+      | {
+          optionText: string;
+          isCorrect?: boolean | null;
+          id?: string | null;
+        }[]
+      | null;
+    trueFalseOptions?:
+      | {
+          statementText: string;
+          isTrue?: boolean | null;
+          id?: string | null;
+        }[]
+      | null;
+    shortAnswer?: {
+      correctAnswer: string;
+      caseSensitive?: boolean | null;
+      allowPartialMatch?: boolean | null;
+    };
+    /**
+     * Explanation of the correct answer (shown after submission)
+     */
+    explanation?: string | null;
+    id?: string | null;
+  }[];
+  randomizeQuestions?: boolean | null;
+  showResults?: boolean | null;
+  allowRetakes?: boolean | null;
+  /**
+   * Maximum number of attempts allowed
+   */
+  maxAttempts?: number | null;
+  status: 'draft' | 'published' | 'archived';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "individualAccount".
+ */
+export interface IndividualAccount {
+  id: number;
+  fullName: string;
+  phone?: string | null;
+  fieldOfWork: 'management' | 'finance' | 'marketing' | 'digital' | 'logistics' | 'hr' | 'production' | 'it' | 'safety';
+  agreeToTerms: boolean;
+  marketingConsent?: boolean | null;
+  status?: ('active' | 'pending' | 'completed' | 'cancelled') | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  password?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "participation".
  */
 export interface Participation {
   id: number;
-  customer: number | IndividualAccount;
+  client: number | IndividualAccount;
   course: number | Course;
-  progress?: number | null;
+  status: 'pending' | 'enrolled' | 'paid' | 'completed';
+  paymentStatus?: ('unpaid' | 'paid' | 'failed') | null;
+  /**
+   * Automatically set when exam is graded successfully
+   */
+  examCompleted?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -434,6 +676,138 @@ export interface BusinessAcount {
   loginAttempts?: number | null;
   lockUntil?: string | null;
   password?: string | null;
+}
+/**
+ * Course reviews and ratings from users
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "coursereviews".
+ */
+export interface Coursereview {
+  id: number;
+  courseTitle: string;
+  course: number | Course;
+  overallRating: number;
+  reviewCount: number;
+  /**
+   * All reviews for this course
+   */
+  reviews?:
+    | {
+        user: number | User;
+        rating: number;
+        comment?: string | null;
+        status: 'pending' | 'approved' | 'rejected';
+        createdAt?: string | null;
+        helpful?: number | null;
+        /**
+         * Check to feature this review on the course page
+         */
+        isFeatured?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  createdBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Define certificate templates for courses
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "certificates".
+ */
+export interface Certificate {
+  id: number;
+  /**
+   * A descriptive name for this certificate template (e.g., "Completion Certificate")
+   */
+  name: string;
+  /**
+   * Upload a template file (e.g., PDF or image) with placeholders for dynamic data like the client name
+   */
+  template: number | Media;
+  /**
+   * Optional details about this certificate template
+   */
+  description?: string | null;
+  createdTo?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos".
+ */
+export interface Video {
+  id: number;
+  title: string;
+  description?: string | null;
+  duration?: number | null;
+  processingStatus?: ('not_processed' | 'queued' | 'processing' | 'complete' | 'failed') | null;
+  processingJobId?: string | null;
+  hlsUrl?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * Track exam submissions from clients
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exam-submissions".
+ */
+export interface ExamSubmission {
+  id: number;
+  client: number | IndividualAccount;
+  course: number | Course;
+  exam: number | Exam;
+  answers: {
+    /**
+     * Index of the question in the exam
+     */
+    questionIndex: number;
+    questionType: 'multiple-choice' | 'true-false' | 'short-answer';
+    selectedOptions?:
+      | {
+          optionIndex: number;
+          selected: boolean;
+          id?: string | null;
+        }[]
+      | null;
+    trueFalseResponses?:
+      | {
+          statementIndex: number;
+          markedTrue: boolean;
+          id?: string | null;
+        }[]
+      | null;
+    shortAnswerResponse?: string | null;
+    isCorrect?: boolean | null;
+    pointsEarned?: number | null;
+    id?: string | null;
+  }[];
+  /**
+   * Calculated score after submission
+   */
+  score?: number | null;
+  submissionDate: string;
+  timeSpent?: number | null;
+  status: 'pending' | 'graded' | 'failed';
+  /**
+   * Optional feedback for the student
+   */
+  feedback?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -477,6 +851,26 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'BusinessAcounts';
         value: number | BusinessAcount;
+      } | null)
+    | ({
+        relationTo: 'coursereviews';
+        value: number | Coursereview;
+      } | null)
+    | ({
+        relationTo: 'certificates';
+        value: number | Certificate;
+      } | null)
+    | ({
+        relationTo: 'videos';
+        value: number | Video;
+      } | null)
+    | ({
+        relationTo: 'exams';
+        value: number | Exam;
+      } | null)
+    | ({
+        relationTo: 'exam-submissions';
+        value: number | ExamSubmission;
       } | null);
   globalSlug?: string | null;
   user:
@@ -669,7 +1063,6 @@ export interface IndividualAccountSelect<T extends boolean = true> {
   fullName?: T;
   phone?: T;
   fieldOfWork?: T;
-  participation?: T;
   agreeToTerms?: T;
   marketingConsent?: T;
   status?: T;
@@ -689,41 +1082,131 @@ export interface IndividualAccountSelect<T extends boolean = true> {
  */
 export interface CoursesSelect<T extends boolean = true> {
   title?: T;
-  description?: T;
-  image?: T;
-  curriculum?:
+  urlName?: T;
+  state?: T;
+  description?:
     | T
     | {
-        quiz?:
+        details?:
           | T
           | {
-              title?: T;
-              questions?:
+              challenges?:
                 | T
                 | {
-                    question?: T;
-                    answers?:
-                      | T
-                      | {
-                          answer?: T;
-                          true?: T;
-                          id?: T;
-                        };
+                    point?: T;
                     id?: T;
                   };
-              id?: T;
-              blockName?: T;
+              overview?:
+                | T
+                | {
+                    point?: T;
+                    id?: T;
+                  };
+              outcomes?:
+                | T
+                | {
+                    point?: T;
+                    id?: T;
+                  };
+              targetAudience?:
+                | T
+                | {
+                    point?: T;
+                    id?: T;
+                  };
             };
-        video?:
+        infos?:
+          | T
+          | {
+              numberOfVideos?: T;
+              numberOfSections?: T;
+              numberOfPracticalFiles?: T;
+              numberOfPracticalExamples?: T;
+              courseTime?: T;
+            };
+      };
+  coverPhoto?: T;
+  videoPreview?: T;
+  enrollmentType?: T;
+  isPaid?: T;
+  price?: T;
+  sections?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        order?: T;
+        isPublic?: T;
+        lessons?:
           | T
           | {
               title?: T;
-              duration?: T;
-              playerURL?: T;
+              description?: T;
+              order?: T;
+              contentItems?:
+                | T
+                | {
+                    videoContent?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          videoFile?: T;
+                          duration?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    pdfContent?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          pdfFile?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    excelContent?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          excelFile?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    docContent?:
+                      | T
+                      | {
+                          title?: T;
+                          description?: T;
+                          docFile?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                    quizQuestion?:
+                      | T
+                      | {
+                          question?: T;
+                          questionType?: T;
+                          options?:
+                            | T
+                            | {
+                                text?: T;
+                                isCorrect?: T;
+                                id?: T;
+                              };
+                          explanation?: T;
+                          id?: T;
+                          blockName?: T;
+                        };
+                  };
               id?: T;
-              blockName?: T;
             };
+        id?: T;
       };
+  instructor?: T;
+  exam?: T;
+  createdBy?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -745,9 +1228,11 @@ export interface InstructorsSelect<T extends boolean = true> {
  * via the `definition` "participation_select".
  */
 export interface ParticipationSelect<T extends boolean = true> {
-  customer?: T;
+  client?: T;
   course?: T;
-  progress?: T;
+  status?: T;
+  paymentStatus?: T;
+  examCompleted?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -772,6 +1257,153 @@ export interface BusinessAcountsSelect<T extends boolean = true> {
   hash?: T;
   loginAttempts?: T;
   lockUntil?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "coursereviews_select".
+ */
+export interface CoursereviewsSelect<T extends boolean = true> {
+  courseTitle?: T;
+  course?: T;
+  overallRating?: T;
+  reviewCount?: T;
+  reviews?:
+    | T
+    | {
+        user?: T;
+        rating?: T;
+        comment?: T;
+        status?: T;
+        createdAt?: T;
+        helpful?: T;
+        isFeatured?: T;
+        id?: T;
+      };
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "certificates_select".
+ */
+export interface CertificatesSelect<T extends boolean = true> {
+  name?: T;
+  template?: T;
+  description?: T;
+  createdTo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos_select".
+ */
+export interface VideosSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  duration?: T;
+  processingStatus?: T;
+  processingJobId?: T;
+  hlsUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exams_select".
+ */
+export interface ExamsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  timeLimit?: T;
+  passingScore?: T;
+  questions?:
+    | T
+    | {
+        questionText?: T;
+        questionType?: T;
+        points?: T;
+        multipleChoiceOptions?:
+          | T
+          | {
+              optionText?: T;
+              isCorrect?: T;
+              id?: T;
+            };
+        trueFalseOptions?:
+          | T
+          | {
+              statementText?: T;
+              isTrue?: T;
+              id?: T;
+            };
+        shortAnswer?:
+          | T
+          | {
+              correctAnswer?: T;
+              caseSensitive?: T;
+              allowPartialMatch?: T;
+            };
+        explanation?: T;
+        id?: T;
+      };
+  randomizeQuestions?: T;
+  showResults?: T;
+  allowRetakes?: T;
+  maxAttempts?: T;
+  status?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "exam-submissions_select".
+ */
+export interface ExamSubmissionsSelect<T extends boolean = true> {
+  client?: T;
+  course?: T;
+  exam?: T;
+  answers?:
+    | T
+    | {
+        questionIndex?: T;
+        questionType?: T;
+        selectedOptions?:
+          | T
+          | {
+              optionIndex?: T;
+              selected?: T;
+              id?: T;
+            };
+        trueFalseResponses?:
+          | T
+          | {
+              statementIndex?: T;
+              markedTrue?: T;
+              id?: T;
+            };
+        shortAnswerResponse?: T;
+        isCorrect?: T;
+        pointsEarned?: T;
+        id?: T;
+      };
+  score?: T;
+  submissionDate?: T;
+  timeSpent?: T;
+  status?: T;
+  feedback?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

@@ -7,7 +7,7 @@ import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
 
 import { Categories } from '@/collections/Categories'
-import { Comments } from '@/collections/Comments'
+import { Comments } from '@/collections/Courses/Comments'
 import { Media } from '@/collections/Media'
 import { Users } from '@/collections/Users'
 
@@ -19,6 +19,11 @@ import { Courses } from './collections/Courses/Courses'
 import { Participation } from './collections/Courses/Participation'
 import { Instructors } from '@/collections/Instructors'
 import businessAcounts from './collections/Clients/business'
+import { CourseReviews } from './collections/Courses/CourseReviews'
+import { Certificates } from './collections/Courses/Certificates'
+import { Videos } from './collections/Courses/Videos'
+import { Exams } from './collections/Courses/Exam/Exams'
+import { ExamSubmissions } from './collections/Courses/Exam/ExamSubmissions'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -69,12 +74,18 @@ export default buildConfig({
     Instructors,
     Participation,
     businessAcounts,
+    CourseReviews,
+    Certificates,
+    Videos,
+    Exams,
+    ExamSubmissions,
   ],
 
   plugins: [
     s3Storage({
       collections: {
         media: true,
+        videos: true,
       },
       bucket: process.env.MINIO_BUCKET || '',
       config: {
