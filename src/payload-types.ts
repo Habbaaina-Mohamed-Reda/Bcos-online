@@ -203,6 +203,15 @@ export interface Media {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Choose where this file will be uploaded in MinIO.
+   */
+  uploadFolder: 'media' | 'images' | 'documents';
+  originalFilename?: string | null;
+  /**
+   * Full URL to access this file
+   */
+  fileURL?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -939,6 +948,9 @@ export interface PayloadMigration {
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
+  uploadFolder?: T;
+  originalFilename?: T;
+  fileURL?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;

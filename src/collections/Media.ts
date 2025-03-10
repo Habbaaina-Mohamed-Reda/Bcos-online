@@ -9,7 +9,6 @@ import {
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 
-
 export const Media: CollectionConfig = {
   slug: 'media',
   access: {
@@ -18,6 +17,7 @@ export const Media: CollectionConfig = {
     read: anyone,
     update: authenticated,
   },
+
   fields: [
     {
       name: 'alt',
@@ -35,7 +35,8 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
+    // Use a function to dynamically set the storage path based on file typ
+    disableLocalStorage: true,
     adminThumbnail: 'thumbnail',
     imageSizes: [
       {
@@ -64,6 +65,6 @@ export const Media: CollectionConfig = {
         width: 1920,
       },
     ],
-    mimeTypes: ['image/*'], // Restrict to images only
+    mimeTypes: ['image/*', 'application/pdf'], // Restrict to images only
   },
 }

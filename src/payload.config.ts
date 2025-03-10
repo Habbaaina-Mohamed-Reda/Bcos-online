@@ -99,6 +99,7 @@ export default buildConfig({
       },
     }),
   ],
+
   endpoints: [
     {
       path: '/health',
